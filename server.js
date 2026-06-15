@@ -13,7 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "5mb" })); // larger limit so base64 station photos fit
 app.use(morgan("dev"));
 
 // localhost:5000
