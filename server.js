@@ -26,6 +26,19 @@ app.get("/", (req, res) => {
   res.send("⚡ VoltFlow API (PostgreSQL) is running");
 });
 
+// 404 — no route matched
+app.use((req, res) => {
+  res.status(404).json({ message: `Route not found: ${req.method} ${req.originalUrl}` });
+});
+
+// Central error handler — Express 5 forwards rejected async-handler promises
+// here automatically, so a DB failure returns clean JSON instead of crashing.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error("API error:", err);
+  res.status(err.status || 500).json({ message: err.message || "Internal server error" });
+});
+
 db.connect().then(() => {
   app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
 });
