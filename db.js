@@ -29,4 +29,19 @@ if (process.env.DATABASE_URL) {
   console.log("⚠  No DATABASE_URL set — using in-memory pg-mem database (data resets on restart).");
 }
 
+// On a real (cloud) database, create the tables + seed automatically the first
+// time the app runs — only if they don't exist yet (so restarts don't duplicate
+// data). For pg-mem the schema is already loaded above.
+export async function initSchema() {
+  if (!process.env.DATABASE_URL) return;
+  const check = await client.query("SELECT to_regclass('public.users') AS t");
+  if (check.rows[0].t) {
+    console.log("📦 Schema already present — skipping init.");
+    return;
+  }
+  const dir = dirname(fileURLToPath(import.meta.url));
+  await client.query(readFileSync(join(dir, "schema.sql"), "utf8"));
+  console.log("📦 Schema initialised (tables + seed created).");
+}
+
 export default client;

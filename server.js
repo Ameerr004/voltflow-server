@@ -6,7 +6,7 @@ import authRoutes from "./routes/auth.js";
 import stationRoutes from "./routes/stations.js";
 import bookingRoutes from "./routes/bookings.js";
 import slotRoutes from "./routes/slots.js";
-import db from "./db.js";
+import db, { initSchema } from "./db.js";
 dotenv.config();
 
 const app = express();
@@ -44,5 +44,8 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 db.connect()
-  .then(() => console.log("✅ Database connected"))
-  .catch((err) => console.error("❌ Database connection failed:", err.message));
+  .then(async () => {
+    console.log("✅ Database connected");
+    await initSchema(); // auto-create tables + seed on first run
+  })
+  .catch((err) => console.error("❌ Database setup failed:", err.message));
