@@ -51,7 +51,7 @@ psql "$DATABASE_URL" -f schema.sql
 
 - `users` — `id, email, password, role`
 - `stations` — `id, name, location, connector_type, power_kw, price_per_kwh, status, image_url`
-- `slots` — `id, station_id (FK, ON DELETE CASCADE), slot_date, start_time, end_time, status, booked_by` with `UNIQUE (station_id, slot_date, start_time)`
+- `slots` — `id, station_id (FK → stations.id, ON DELETE CASCADE), slot_date, start_time, end_time, status, booked_by (FK → users.email, ON DELETE SET NULL)` with `UNIQUE (station_id, slot_date, start_time)`
 
 It also seeds:
 - **One admin account** — `marmashameer0@gmail.com` / `1234` (role `admin`)

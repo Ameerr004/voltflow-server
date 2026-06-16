@@ -31,9 +31,22 @@ CREATE TABLE IF NOT EXISTS slots (
   start_time TEXT NOT NULL,       -- '08:00'
   end_time TEXT NOT NULL,         -- '10:00'
   status TEXT NOT NULL DEFAULT 'available',  -- 'available' | 'booked' | 'blocked'
-  booked_by TEXT,                 -- user email when status = 'booked'
+  booked_by TEXT REFERENCES users(email) ON DELETE SET NULL,  -- FK: the user who booked
   UNIQUE (station_id, slot_date, start_time)
 );
+
+-- Migration for databases created before booked_by was a foreign key:
+-- first clear any emails that don't exist in users, then add the FK constraint.
+UPDATE slots SET booked_by = NULL
+  WHERE booked_by IS NOT NULL AND booked_by NOT IN (SELECT email FROM users);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'slots_booked_by_fkey') THEN
+    ALTER TABLE slots
+      ADD CONSTRAINT slots_booked_by_fkey
+      FOREIGN KEY (booked_by) REFERENCES users(email) ON DELETE SET NULL;
+  END IF;
+END $$;
 
 -- Seed data so the UI has something to show
 -- The single admin account. Admins are provisioned here, never via signup.
