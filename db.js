@@ -10,7 +10,13 @@ let client;
 
 if (process.env.DATABASE_URL) {
   // Production / real setup — connect to a real PostgreSQL instance.
-  client = new pg.Client(process.env.DATABASE_URL);
+  // Cloud databases (Render, Neon, Supabase…) require SSL; localhost does not.
+  const url = process.env.DATABASE_URL;
+  const isLocal = url.includes("localhost") || url.includes("127.0.0.1");
+  client = new pg.Client({
+    connectionString: url,
+    ssl: isLocal ? false : { rejectUnauthorized: false },
+  });
 } else {
   // Dev fallback: zero-install in-memory PostgreSQL so the app runs without
   // installing/configuring a database. Schema + seed are loaded from schema.sql.

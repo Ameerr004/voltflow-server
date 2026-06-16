@@ -39,6 +39,10 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ message: err.message || "Internal server error" });
 });
 
-db.connect().then(() => {
-  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
-});
+// Start listening immediately so the host (Render) detects the open port,
+// then connect to the database in the background and log the result.
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+db.connect()
+  .then(() => console.log("✅ Database connected"))
+  .catch((err) => console.error("❌ Database connection failed:", err.message));
